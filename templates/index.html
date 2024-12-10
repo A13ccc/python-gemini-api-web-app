@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Text Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-box {
+            max-height: 500px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        .message {
+            margin: 10px 0;
+        }
+
+        .user-message {
+            text-align: right;
+        }
+
+        .bot-message {
+            text-align: left;
+        }
+
+        .message .content {
+            display: inline-block;
+            padding: 10px 15px;
+            border-radius: 12px;
+        }
+
+        .user-message .content {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .bot-message .content {
+            background-color: #eaeaea;
+        }
+
+        textarea {
+            width: calc(100% - 90px);
+            margin-right: 10px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .copy-btn {
+            display: block;
+            margin: 10px 0;
+            color: #007bff;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        .copy-btn:hover {
+            text-decoration: underline;
+        }
+
+        pre {
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div id="body" class="container">
+        <h1>AI Text Chat</h1>
+        <div id="chatBox" class="chat-box"></div>
+        <textarea id="prompt" rows="5" placeholder="Enter your message..."></textarea>
+        <button onclick="sendMessage()">Send</button>
+        <button id="clearHistoryButton" onclick="clearHistory()">Clear History</button>
+        <button id="logoutButton" onclick="logout()">Log Out</button>
+    </div>
+    
+
+
+    <!-- Login Modal -->
+    <div id="loginModal" style="display: none;">
+        <h3>Login</h3>
+        <form id="loginForm">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required><br><br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required><br><br>
+            <button type="submit">Login</button>
+        </form>
+        <button onclick="showSignup()">Sign Up</button>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" style="display: none;">
+        <h3>Sign Up</h3>
+        <form id="signupForm">
+            <label for="newUsername">Username:</label>
+            <input type="text" id="newUsername" name="username" required><br><br>
+            <label for="newPassword">Password:</label>
+            <input type="password" id="newPassword" name="password" required><br><br>
+            <button type="submit">Sign Up</button>
+        </form>
+        <button onclick="showLogin()">Back to Login</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script>
+        window.onload = async function() {
+            try {
+                // Check if the user is logged in
+                const isLoggedIn = await fetch('/check_login').then(response => response.json());
+
+                if (isLoggedIn) {
+                    // Fetch the chat history if the user is logged in
+                    const response = await fetch('/history');
+                    const chatHistory = await response.json();
+
+                    // Render each message in the chat box
+                    chatHistory.forEach(message => {
+                        addMessageToChat(message.content, message.role);
+                    });
+
+                    // Hide modals and show the main content
+                    document.getElementById("signupModal").style.display = "none";
+                    document.getElementById("loginModal").style.display = "none";
+                    document.getElementById("body").style.display = "block";
+                } else {
+                    // Show the login modal if the user is not logged in
+                    document.getElementById('loginModal').style.display = 'block';
+                    document.getElementById("body").style.display = "none";
+                    document.getElementById("logoutButton").style.display = "block";
+                }
+            } catch (error) {
+                console.error("An error occurred during initialization:", error);
+            }
+        };
+
+        async function sendMessage() {
+            const prompt = document.getElementById("prompt").value.trim();
+            const chatBox = document.getElementById("chatBox");
+            
+            if (!prompt) return;
+
+            // Add user message to the chat
+            addMessageToChat(prompt, "user");
+
+            // Clear the input box
+            document.getElementById("prompt").value = "";
+
+            try {
+                // Send the prompt to the backend
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    addMessageToChat(`Error: ${result.error}`, "bot");
+                } else {
+                    // Format and display bot response
+                    const formattedResponse = formatMarkdown(result.response);
+                    addMessageToChat(formattedResponse, "bot");
+                }
+            } catch (error) {
+                addMessageToChat(`Error: ${error.message}`, "bot");
+            }
+        }
+
+
+        function addMessageToChat(content, sender) {
+            const chatBox = document.getElementById("chatBox");
+            const messageDiv = document.createElement("div");
+            const messageContent = document.createElement("div");
+            const copyButton = document.createElement("button");
+
+            // Replace line breaks with <br/> to display multiline text properly
+            content = content.replace(/\n/g, "<br/>");
+
+            messageDiv.className = `message ${sender}-message`;
+            messageContent.className = "content";
+            messageContent.innerHTML = content;
+
+            // Add copy button for bot messages
+            if (sender === "bot") {
+                copyButton.innerText = "Copy";
+                copyButton.className = "copy-btn";
+                copyButton.onclick = () => {
+                    navigator.clipboard.writeText(content.replace(/<\/?[^>]+(>|$)/g, ""));
+                    alert("Copied to clipboard!");
+                };
+                messageContent.appendChild(copyButton);
+            }
+
+            messageDiv.appendChild(messageContent);
+            chatBox.appendChild(messageDiv);
+
+            // Auto-scroll to the bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Apply syntax highlighting
+            Prism.highlightAll();
+        }
+
+
+        function formatMarkdown(text) {
+            // Headings
+            text = text.replace(/^(### )(.+)/gm, "<h3>$2</h3>");
+            text = text.replace(/^(## )(.+)/gm, "<h2>$2</h2>");
+            text = text.replace(/^(# )(.+)/gm, "<h1>$2</h1>");
+
+            // Bold
+            text = text.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+
+            // Italics
+            text = text.replace(/\*(.*?)\*/g, "<i>$1</i>");
+
+            // Unordered Lists
+            text = text.replace(/^\* (.+)/gm, "<ul><li>$1</li></ul>");
+            text = text.replace(/<\/ul>\n<ul>/g, ""); // Merge <ul> tags
+
+            // Ordered Lists
+            text = text.replace(/^\d+\. (.+)/gm, "<ol><li>$1</li></ol>");
+            text = text.replace(/<\/ol>\n<ol>/g, ""); // Merge <ol> tags
+
+            // Links
+            text = text.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+            // Inline Code
+            text = text.replace(/`([^`]+)`/g, "<code>$1</code>");
+
+            // Code Blocks
+            text = text.replace(/```([\s\S]*?)```/g, "<pre><code class='language-javascript'>$1</code></pre>");
+
+            // Blockquotes
+            text = text.replace(/^> (.+)/gm, "<blockquote>$1</blockquote>");
+
+            // Line Breaks
+            text = text.replace(/\n/g, "<br/>");
+
+            return text;
+        }
+
+
+        // Function to clear chat history
+        async function clearHistory() {
+            // Send a request to the server to clear the chat history
+            const response = await fetch('/clear-history', { method: 'POST' });
+
+            if (response.ok) {
+                alert("Chat history cleared!");
+                // Optionally, reload the page to reflect the cleared history
+                location.reload();
+            } else {
+                alert("Error clearing chat history.");
+            }
+        }
+
+        function showLogin() {
+            document.getElementById("signupModal").style.display = "none";
+            document.getElementById("loginModal").style.display = "block";
+            document.getElementById("loginForm").reset();
+
+            document.getElementById("body").style.display = "none";
+        }
+
+        function hideLogin() {
+            document.getElementById("signupModal").style.display = "none";
+            document.getElementById("loginModal").style.display = "none";
+        }
+
+        function showSignup() {
+            document.getElementById("loginModal").style.display = "none";
+            document.getElementById("signupModal").style.display = "block";
+        }
+
+        // Handle login
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (response.ok) {
+                alert("Login successful!");
+                location.reload();
+            } else {
+                alert("Invalid username or password.");
+            }
+        });
+
+        // Handle signup
+        document.getElementById("signupForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const username = document.getElementById("newUsername").value;
+            const password = document.getElementById("newPassword").value;
+
+            const response = await fetch('/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (response.ok) {
+                alert("Signup successful! Please log in.");
+                showLogin();
+            } else {
+                alert("Signup failed. Username might already be taken.");
+            }
+        });
+        
+        async function logout() {
+            try {
+                const response = await fetch('/logout', { method: 'POST' });
+                if (response.ok) {
+                    alert("Logged out successfully!");
+                    document.getElementById('logoutButton').style.display = 'none'; // Hide logout button
+                    document.getElementById('loginModal').style.display = 'block'; // Show login modal
+                    document.getElementById("body").style.display = "none"; // Hide main content
+                } else {
+                    alert("Error logging out. Please try again.");
+                }
+            } catch (error) {
+                console.error("Error during logout:", error);
+                alert("An unexpected error occurred.");
+            }
+        }
+
+
+    </script>
+</body>
+</html>
