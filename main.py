@@ -10,8 +10,8 @@ app.secret_key = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz'
 # Your API key setup for Google Gemini
 genai.configure(api_key="AIzaSyD7cZ-H5GYzrQQ70-bMM_shl-HGs3Eyrhk")
 
-USERS_FILE = "users.json"
-CHAT_HISTORY_DIR = "chat_histories"
+USERS_FILE = "./users.json"
+CHAT_HISTORY_DIR = "./chat_histories"
 
 
 def load_users():
