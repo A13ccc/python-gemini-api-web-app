@@ -1,9 +1,10 @@
 import json
-import google.generativeai as genai
-from flask import Flask, request, jsonify, session, render_template
-from werkzeug.security import generate_password_hash, check_password_hash
 import os
 
+import google.generativeai as genai
+from flask import Flask, jsonify, render_template, request, session
+from werkzeug.security import check_password_hash, generate_password_hash
+ 
 app = Flask(__name__)
 app.secret_key = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz'
 
