@@ -3,14 +3,16 @@
   "setupTasks": [
     {
       "command": "pip3 install -r requirements.txt",
-      "name": "o"
-    },
-    {
-      "command": "python3 main.py",
       "name": "p"
     }
   ],
 
   // These tasks can be run from CodeSandbox. Running one will open a log in the app.
-  "tasks": {}
+  "tasks": {
+    "python3 main.py": {
+      "name": "python3 main.py",
+      "command": "python3 main.py",
+      "runAtStart": true
+    }
+  }
 }
