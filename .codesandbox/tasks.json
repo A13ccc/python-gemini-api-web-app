@@ -2,8 +2,8 @@
   // These tasks will run in order when initializing your CodeSandbox project.
   "setupTasks": [
     {
-      "name": "p",
-      "command": "pip3 install -r requirements.txt"
+      "command": "pip3 install -r requirements.txt",
+      "name": "p"
     }
   ],
 

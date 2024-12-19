@@ -5,9 +5,10 @@ body {
   background-color: #3b3b3b;
 }
 
-title {
+h1 {
   color: white;
 }
+
 .container {
   max-width: 800px;
   margin: 50px auto;
@@ -63,6 +64,8 @@ textarea {
   border: 1px solid #ddd;
   border-radius: 5px;
   resize: none;
+  background-color: #303030;
+  color: white;
 }
 
 button {
@@ -96,4 +99,11 @@ button:hover {
 
 pre {
   text-align: left;
+}
+
+loginModal {
+  background-color: #303030;
+  align-self: center;
+  align-items: center;
+  color: white;
 }

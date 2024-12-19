@@ -99,7 +99,7 @@
             if (!prompt) return;
 
             // Add user message to the chat
-            addMessageToChat(prompt, "user");
+            addMessageToChat(formatMarkdown(prompt), "user");
 
             // Clear the input box
             document.getElementById("prompt").value = "";
