@@ -47,19 +47,34 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script>
+
+        // Check if the user is logged in
+        function checkIfLoggedIn() {
+            const isLoggedIn = localStorage.getItem("isLoggedIn");
+
+            if (isLoggedIn === "true") {
+                alert("User is logged in");
+                // You can show logged-in user information here
+            } else {
+                alert("User is not logged in");
+                // You can redirect the user to the login page or show a login prompt
+            }
+        }
+
         window.onload = async function() {
             try {
                 // Check if the user is logged in
-                const isLoggedIn = await fetch('/check_login').then(response => response.json());
+                const isLoggedIn = localStorage.getItem("isLoggedIn");
 
                 if (isLoggedIn) {
                     // Fetch the chat history if the user is logged in
                     const response = await fetch('/history');
                     const chatHistory = await response.json();
 
-                    // Render each message in the chat box
+                    // Render each message formatted in the chat box
+                    
                     chatHistory.forEach(message => {
-                        addMessageToChat(message.content, message.role);
+                        addMessageToChat(formatMarkdown(message.content), message.role);
                     });
 
                     // Hide modals and show the main content
@@ -234,6 +249,7 @@
 
             if (response.ok) {
                 alert("Login successful!");
+                localStorage.setItem("isLoggedIn", "true");
                 location.reload();
             } else {
                 alert("Invalid username or password.");
@@ -265,9 +281,15 @@
                 const response = await fetch('/logout', { method: 'POST' });
                 if (response.ok) {
                     alert("Logged out successfully!");
-                    document.getElementById('logoutButton').style.display = 'none'; // Hide logout button
-                    document.getElementById('loginModal').style.display = 'block'; // Show login modal
-                    document.getElementById("body").style.display = "none"; // Hide main content
+                    localStorage.removeItem("isLoggedIn");
+
+
+                    // Hide logout button and show login modal
+                    document.getElementById('logoutButton').style.display = 'none';
+                    document.getElementById('loginModal').style.display = 'block';
+
+                    // Hide main content
+                    document.getElementById("body").style.display = "none";
                 } else {
                     alert("Error logging out. Please try again.");
                 }
