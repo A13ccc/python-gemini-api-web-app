@@ -102,6 +102,7 @@ pre {
 }
 
 .login_container {
+<<<<<<< HEAD
   display: flex;
   flex-direction: column; /* Ensure child elements are stacked vertically */
   align-items: center;
@@ -114,4 +115,16 @@ pre {
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   color: white; /* Ensure text is visible */
+=======
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 20px;
+  background: rgb(31, 31, 31);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  align-content: center;
+  align-items: center;
+  justify-content: center;
+  justify-items: center;
+>>>>>>> 935042b (changes)
 }
