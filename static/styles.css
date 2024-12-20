@@ -106,7 +106,7 @@ pre {
   flex-direction: column; /* Ensure child elements are stacked vertically */
   align-items: center;
   justify-content: center;
-  height: 100vh; /* Full viewport height */
+  height: 25vh; /* Full viewport height */
   max-width: 800px;
   margin: 0 auto; /* Center horizontally */
   padding: 20px;
