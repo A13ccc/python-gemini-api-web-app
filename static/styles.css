@@ -102,14 +102,16 @@ pre {
 }
 
 .login_container {
+  display: flex;
+  flex-direction: column; /* Ensure child elements are stacked vertically */
+  align-items: center;
+  justify-content: center;
+  height: 100vh; /* Full viewport height */
   max-width: 800px;
-  margin: 50px auto;
+  margin: 0 auto; /* Center horizontally */
   padding: 20px;
   background: rgb(31, 31, 31);
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  align-content: center;
-  align-items: center;
-  justify-content: center;
-  justify-items: center;
+  color: white; /* Ensure text is visible */
 }
